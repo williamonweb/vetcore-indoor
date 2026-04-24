@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Checkout • Vetcore Indoor</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="marketing-body">
+  <main class="marketing-shell">
+    <nav class="marketing-nav">
+      <div class="marketing-brand">
+        <img src="assets/vetcore-indoor-logo.svg" alt="Vetcore Indoor" class="marketing-logo">
+        <div>
+          <h1>Vetcore Indoor</h1>
+          <p>Checkout de contratação</p>
+        </div>
+      </div>
+
+      <div class="nav-actions">
+        <a class="outline-btn" href="planos.html">Voltar aos planos</a>
+        <a class="dark-btn" href="login.html">Já tenho acesso</a>
+      </div>
+    </nav>
+
+    <section class="hero-card" style="margin-bottom:24px;">
+      <div class="hero-kicker">Checkout</div>
+      <h2>Finalize a contratação do seu plano.</h2>
+      <p>
+        Preencha os dados da clínica, escolha a forma de pagamento e conclua a contratação.
+        Depois, o cliente pode entrar no sistema com o acesso liberado.
+      </p>
+    </section>
+
+    <section id="checkoutWrap" class="checkout-grid">
+      <article class="checkout-card">
+        <h3>Dados da contratação</h3>
+        <form id="checkoutForm" class="checkout-form">
+          <div class="checkout-grid-2">
+            <label>
+              <span>Nome da clínica</span>
+              <input type="text" id="clinicName" placeholder="Ex.: Clínica Onda Animal" required />
+            </label>
+
+            <label>
+              <span>Responsável</span>
+              <input type="text" id="ownerName" placeholder="Ex.: William" required />
+            </label>
+          </div>
+
+          <div class="checkout-grid-2">
+            <label>
+              <span>E-mail</span>
+              <input type="email" id="email" placeholder="admin@clinica.com" required />
+            </label>
+
+            <label>
+              <span>Telefone / WhatsApp</span>
+              <input type="text" id="phone" placeholder="(51) 90000-1234" required />
+            </label>
+          </div>
+
+          <label>
+            <span>Forma de pagamento</span>
+            <div class="payment-options" id="paymentOptions">
+              <div class="payment-option active" data-value="pix">Pix</div>
+              <div class="payment-option" data-value="cartao">Cartão</div>
+              <div class="payment-option" data-value="boleto">Boleto</div>
+            </div>
+            <input type="hidden" id="paymentMethod" value="pix" />
+          </label>
+
+          <label>
+            <span>Observações</span>
+            <textarea id="notes" rows="4" placeholder="Ex.: Preciso começar ainda esta semana."></textarea>
+          </label>
+
+          <div class="auth-actions">
+            <button type="submit" class="light-btn">Finalizar contratação</button>
+            <a class="outline-btn" href="planos.html">Voltar</a>
+          </div>
+
+          <div id="checkoutStatus" class="auth-status" aria-live="polite"></div>
+        </form>
+      </article>
+
+      <aside class="checkout-card">
+        <h3>Resumo do pedido</h3>
+        <div class="order-box">
+          <div class="order-row">
+            <span>Plano</span>
+            <strong id="summaryPlanName">Plano Pro</strong>
+          </div>
+          <div class="order-row">
+            <span>Mensalidade</span>
+            <strong id="summaryPlanPrice">R$ 399/mês</strong>
+          </div>
+          <div class="order-row">
+            <span>Implantação</span>
+            <strong>Inclusa</strong>
+          </div>
+          <div class="order-row">
+            <span>Suporte inicial</span>
+            <strong>Incluso</strong>
+          </div>
+          <div class="order-total">
+            <span>Total hoje</span>
+            <strong id="summaryTotal">R$ 399</strong>
+          </div>
+
+          <div class="demo-box">
+            Esta tela já deixa o sistema com cara vendável. Depois você pode ligar esse checkout em Mercado Pago, Stripe, Asaas ou outro gateway.
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <section id="successPanel" class="checkout-card success-panel">
+      <div class="success-icon">✓</div>
+      <h3>Contratação registrada com sucesso</h3>
+      <p id="successText">
+        Recebemos seu pedido. Agora você pode seguir para o login e entrar no painel.
+      </p>
+      <div class="auth-actions" style="justify-content:center;">
+        <a class="light-btn" href="login.html">Ir para o login</a>
+        <a class="outline-btn" href="index.html">Voltar ao início</a>
+      </div>
+    </section>
+  </main>
+
+  <script src="auth.js"></script>
+  <script>
+    const plans = {
+      start: { name: 'Plano Start', priceLabel: 'R$ 299/mês', total: 'R$ 299' },
+      pro: { name: 'Plano Pro', priceLabel: 'R$ 399/mês', total: 'R$ 399' },
+      multi: { name: 'Plano Multi', priceLabel: 'Sob consulta', total: 'Sob consulta' }
+    };
+
+    const params = new URLSearchParams(window.location.search);
+    const selected = params.get('plan') || 'pro';
+    const plan = plans[selected] || plans.pro;
+
+    document.getElementById('summaryPlanName').textContent = plan.name;
+    document.getElementById('summaryPlanPrice').textContent = plan.priceLabel;
+    document.getElementById('summaryTotal').textContent = plan.total;
+
+    const paymentOptions = document.querySelectorAll('.payment-option');
+    const paymentMethod = document.getElementById('paymentMethod');
+
+    paymentOptions.forEach(option => {
+      option.addEventListener('click', () => {
+        paymentOptions.forEach(item => item.classList.remove('active'));
+        option.classList.add('active');
+        paymentMethod.value = option.dataset.value;
+      });
+    });
+
+    const checkoutForm = document.getElementById('checkoutForm');
+    const checkoutStatus = document.getElementById('checkoutStatus');
+    const successPanel = document.getElementById('successPanel');
+    const checkoutWrap = document.getElementById('checkoutWrap');
+    const successText = document.getElementById('successText');
+
+    checkoutForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const payload = {
+        plan: selected,
+        planName: plan.name,
+        clinicName: document.getElementById('clinicName').value.trim(),
+        ownerName: document.getElementById('ownerName').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        phone: document.getElementById('phone').value.trim(),
+        paymentMethod: paymentMethod.value,
+        notes: document.getElementById('notes').value.trim()
+      };
+
+      localStorage.setItem('vetcoreIndoorCheckoutLead', JSON.stringify(payload));
+      if (window.TVReceptionAuth?.register) {
+        window.TVReceptionAuth.register({
+          clinicName: payload.clinicName,
+          ownerName: payload.ownerName,
+          email: payload.email,
+          phone: payload.phone,
+          password: '123456'
+        });
+      }
+
+      checkoutStatus.textContent = 'Contratação registrada. Preparando seu acesso...';
+      checkoutStatus.className = 'auth-status success';
+
+      successText.textContent = 'Plano ' + plan.name + ' registrado para ' + payload.clinicName + '. O acesso inicial já pode ser feito no login.';
+      checkoutWrap.style.display = 'none';
+      successPanel.classList.add('show');
+    });
+  </script>
+</body>
+</html>

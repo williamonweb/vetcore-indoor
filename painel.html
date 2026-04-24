@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Painel • Vetcore Indoor</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="admin-body">
+  <div class="admin-shell">
+    <aside class="sidebar">
+      <div>
+        <div class="brand-block">
+          <div class="brand-mark">TV</div>
+          <div>
+            <h1>Painel de Conteúdo</h1>
+            <p>Gerencie imagens, vídeos, duração e a aparência da TV</p>
+          </div>
+        </div>
+
+        <div class="sidebar-card">
+          <h2>Acesso rápido</h2>
+          <a class="sidebar-link" id="openTvLink" href="tv.html" target="_blank">Abrir tela da TV</a>
+          <button id="exportBtn" class="sidebar-link ghost-btn">Exportar backup</button>
+          <label class="sidebar-link ghost-btn file-label">
+            Importar backup
+            <input type="file" id="importBackup" accept="application/json" hidden />
+          </label>
+        </div>
+
+        <div class="sidebar-card small-text">
+          <h2>Importante</h2>
+          <p>O painel agora pode salvar no Supabase e atualizar a TV em tempo real por clínica. Se o Supabase não estiver configurado, ele entra em modo local de demonstração.</p>
+          <p>A TV mantém o layout fixo: você atualiza a mídia principal, a duração e a faixa de notícias.</p>
+        </div>
+      </div>
+
+      <div class="sidebar-card small-text">
+        <strong>Atalho:</strong> Alt + T abre a tela da TV.
+      </div>
+    </aside>
+
+    <main class="content-area">
+      <header class="topbar">
+        <div>
+          <h2>Cadastro de conteúdo</h2>
+          <p>Monte a programação que vai rodar na recepção.</p>
+        </div>
+        <div class="topbar-actions">
+          <div class="topbar-clinic" id="clinicBadge">Clínica ativa</div>
+          <div class="topbar-clinic" id="realtimeBadge">Realtime</div>
+          <a class="secondary-btn" href="configuracoes.html">Configurações</a>
+          <button id="logoutBtn" class="secondary-btn" type="button">Sair</button>
+          <button id="newItemBtn" class="primary-btn">Novo item</button>
+        </div>
+      </header>
+
+      <section class="card form-card">
+        <div class="card-header">
+          <h3 id="formTitle">Novo item</h3>
+          <span id="saveStatus" class="status-badge">Pronto</span>
+        </div>
+
+        <form id="contentForm" class="content-form">
+          <input type="hidden" id="itemId" />
+
+          <div class="grid two-col">
+            <label>
+              <span>Título</span>
+              <input type="text" id="title" placeholder="Ex.: Vacinação em dia" required />
+            </label>
+
+            <label>
+              <span>Tipo de conteúdo</span>
+              <select id="type" required>
+                <option value="image">Imagem</option>
+                <option value="video">Vídeo</option>
+                <option value="layout">Layout com texto</option>
+                <option value="youtube">YouTube</option>
+              </select>
+            </label>
+          </div>
+
+          <label>
+            <span>Descrição / texto</span>
+            <textarea id="description" rows="4" placeholder="Texto principal que aparecerá no conteúdo"></textarea>
+          </label>
+
+          <div id="textEditorOptions" class="text-editor-options">
+            <div class="editor-toolbar-title">Opções do layout com texto</div>
+            <div class="editor-toolbar-grid">
+              <label class="editor-check"><input type="checkbox" id="textBold" /><span>Negrito</span></label>
+              <label class="editor-check"><input type="checkbox" id="textItalic" /><span>Itálico</span></label>
+              <label><span>Tamanho do texto</span><select id="textSize"><option value="small">Pequeno</option><option value="medium" selected>Médio</option><option value="large">Grande</option><option value="xlarge">Extra grande</option></select></label>
+              <label><span>Cor do texto</span><div class="color-input-wrap"><input type="color" id="textColor" value="#ffffff" /><input type="text" id="textColorText" value="#ffffff" placeholder="#ffffff" /></div></label>
+              <label><span>Alinhamento</span><select id="textAlign"><option value="left">Esquerda</option><option value="center" selected>Centro</option><option value="right">Direita</option></select></label>
+            </div>
+          </div>
+
+          <label id="youtubeUrlField" class="is-hidden">
+            <span>Link do YouTube</span>
+            <input type="text" id="youtubeUrl" placeholder="Cole aqui o link do YouTube" />
+            <small class="field-help">Alguns vídeos do YouTube não permitem incorporação na TV. Se isso acontecer, envie o vídeo como arquivo.</small>
+          </label>
+
+          <div class="grid item-grid-4">
+            <label>
+              <span>Duração (segundos)</span>
+              <input type="number" id="duration" min="3" max="180" value="10" required />
+            </label>
+
+            <label>
+              <span>Botão / destaque</span>
+              <input type="text" id="cta" placeholder="Ex.: Saiba mais" />
+            </label>
+
+            <label>
+              <span>Cor de fundo do layout</span>
+              <div class="color-input-wrap">
+                <input type="color" id="backgroundColor" value="#081f4a" />
+                <input type="text" id="backgroundColorText" value="#081f4a" placeholder="#081f4a" />
+              </div>
+            </label>
+
+            <label class="toggle-row">
+              <span>Ativo</span>
+              <input type="checkbox" id="active" checked />
+            </label>
+          </div>
+
+          <div class="grid two-col">
+            <label>
+              <span>Arquivo de imagem ou vídeo</span>
+              <input type="file" id="mediaFile" accept="image/*,video/*" />
+            </label>
+
+            <label>
+              <span>Logo opcional para layout</span>
+              <input type="file" id="logoFile" accept="image/*" />
+            </label>
+          </div>
+
+          <div class="preview-grid">
+            <div class="preview-card">
+              <h4>Prévia da mídia</h4>
+              <div id="mediaPreview" class="preview-box empty-state">Nenhum arquivo selecionado</div>
+            </div>
+            <div class="preview-card">
+              <h4>Prévia do logo</h4>
+              <div id="logoPreview" class="preview-box empty-state">Nenhum logo selecionado</div>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="primary-btn">Salvar item</button>
+            <button type="button" id="cancelEditBtn" class="secondary-btn">Limpar</button>
+          </div>
+        
+</form>
+      </section>
+
+      <section class="card tv-settings-card">
+        <div class="card-header">
+          <h3>Informações da tela da TV</h3>
+          <span id="tvSettingsStatus" class="status-badge">Pronto</span>
+        </div>
+
+        <form id="tvSettingsForm" class="content-form">
+          <div class="grid two-col">
+            <label>
+              <span>Título do topo</span>
+              <input type="text" id="tvTitle" placeholder="Ex.: Programação da Recepção" />
+            </label>
+            <label>
+              <span>Subtítulo do topo</span>
+              <input type="text" id="tvSubtitle" placeholder="Ex.: Atualização automática da playlist" />
+            </label>
+          </div>
+
+          <div class="grid two-col">
+            <label>
+              <span>Título da lateral direita</span>
+              <input type="text" id="sideTitle" placeholder="Ex.: Fale com nossa equipe" />
+            </label>
+            <label>
+              <span>Texto da lateral direita</span>
+              <input type="text" id="sideText" placeholder="Ex.: Agende consultas e exames" />
+            </label>
+          </div>
+
+          <div class="grid three-col tv-grid-contacts">
+            <label>
+              <span>WhatsApp / telefone</span>
+              <input type="text" id="whatsNumber" placeholder="Ex.: (51) 99999-9999" />
+            </label>
+            <label>
+              <span>Instagram</span>
+              <input type="text" id="instagramText" placeholder="Ex.: @suaclinica" />
+            </label>
+            <label>
+              <span>Facebook / site</span>
+              <input type="text" id="facebookText" placeholder="Ex.: /suaclinica ou site" />
+            </label>
+          </div>
+
+          <label>
+            <span>Números de agendamento (opcional)</span>
+            <input type="text" id="appointmentNumbers" placeholder="Ex.: (51) 99999-9999 | (51) 98888-8888" />
+          </label>
+
+          <label>
+            <span>Mensagem do dia</span>
+            <input type="text" id="messageOfDay" placeholder="Ex.: Agende agora o check-up do seu pet" />
+          </label>
+
+          <div class="grid two-col">
+            <label>
+              <span>Texto das notícias / rodapé</span>
+              <textarea id="newsTicker" rows="4" placeholder="Ex.: Bem-vindo • Promoção de check-up • Horário especial no feriado"></textarea>
+            </label>
+            <label>
+              <span>Etiqueta da faixa</span>
+              <input type="text" id="newsLabel" placeholder="Ex.: AVISOS" />
+            </label>
+          </div>
+
+          <div class="grid two-col">
+            <label>
+              <span>Estilo pronto da faixa de notícias</span>
+              <select id="newsPreset">
+                <option value="clean">Clean profissional</option>
+                <option value="highlight">Destaque turquesa</option>
+                <option value="breaking">Urgente vermelho</option>
+              </select>
+            </label>
+            <label>
+              <span>CSS extra da TV (opcional)</span>
+              <textarea id="customCss" rows="4" placeholder="Ex.: .news-ticker { font-size: 1.1rem; }&#10;.client-side-card { border-color: rgba(108,242,199,0.25); }"></textarea>
+            </label>
+          </div>
+
+          <div class="grid one-col">
+            <label>
+              <span>Logotipo da clínica no topo da TV</span>
+              <input type="file" id="tvLogoFile" accept="image/*" />
+            </label>
+          </div>
+
+          <div class="preview-grid single-preview">
+            <div class="preview-card">
+              <h4>Prévia do logotipo da clínica</h4>
+              <div id="tvLogoPreview" class="preview-box empty-state">Nenhum logotipo selecionado</div><small class="field-help">Esse logotipo aparece no topo da tela da TV.</small>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" id="saveTvSettingsBtn" class="primary-btn">Salvar informações da TV</button>
+            <button type="button" id="resetTvSettingsBtn" class="secondary-btn">Restaurar padrão</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="card list-card">
+        <div class="card-header">
+          <h3>Programação cadastrada</h3>
+          <span id="itemCount" class="muted-pill">0 itens</span>
+        </div>
+        <div id="itemsList" class="items-list"></div>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast" class="toast"></div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="data-service.js"></script>
+  <script src="auth.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

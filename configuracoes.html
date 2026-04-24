@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Configurações • Vetcore Indoor</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="auth-body">
+  <main class="auth-shell">
+    <section class="auth-side-card">
+      <div class="hero-kicker">Configurações da clínica</div>
+      <h2>Cadastre ou atualize os dados da clínica.</h2>
+      <p>
+        Essa área fica disponível só depois do login e serve para salvar nome da clínica,
+        responsável e dados de acesso.
+      </p>
+
+      <div class="auth-bullets">
+        <div><strong>Nome da clínica</strong><br><span>Usado no login, no painel e na apresentação do sistema.</span></div>
+        <div><strong>Responsável</strong><br><span>Define quem administra o painel da unidade.</span></div>
+        <div><strong>E-mail e senha</strong><br><span>Podem ser alterados aqui quando necessário.</span></div>
+      </div>
+    </section>
+
+    <section class="auth-card">
+      <h1>Dados da clínica</h1>
+      <p>Atualize os dados abaixo e salve para manter o acesso da unidade organizado.</p>
+
+      <form id="settingsForm" class="auth-form">
+        <div class="auth-grid">
+          <label>
+            <span>Nome da clínica</span>
+            <input type="text" id="clinicName" placeholder="Ex.: Clínica Onda Animal" required />
+          </label>
+
+          <label>
+            <span>Responsável</span>
+            <input type="text" id="ownerName" placeholder="Ex.: William" required />
+          </label>
+        </div>
+
+
+        <div class="auth-grid">
+          <label>
+            <span>Identificador da clínica</span>
+            <input type="text" id="clinicSlug" placeholder="Ex.: onda-animal" required />
+          </label>
+
+          <label>
+            <span>Plano</span>
+            <input type="text" id="clinicPlan" placeholder="Ex.: pro" value="pro" />
+          </label>
+        </div>
+        <div class="auth-grid">
+          <label>
+            <span>E-mail</span>
+            <input type="email" id="registerEmail" placeholder="admin@clinica.com" required />
+          </label>
+
+          <label>
+            <span>Telefone / WhatsApp</span>
+            <input type="text" id="registerPhone" placeholder="(51) 90000-1234" />
+          </label>
+        </div>
+
+        <div class="auth-grid">
+          <label>
+            <span>Nova senha</span>
+            <input type="password" id="registerPassword" placeholder="Crie uma senha" required />
+          </label>
+
+          <label>
+            <span>Confirmar senha</span>
+            <input type="password" id="confirmPassword" placeholder="Repita a senha" required />
+          </label>
+        </div>
+
+        <div class="auth-actions">
+          <button type="submit" class="light-btn">Salvar configurações</button>
+          <a class="outline-btn" href="painel.html">Voltar ao painel</a>
+        </div>
+
+        <div id="registerStatus" class="auth-status" aria-live="polite"></div>
+      </form>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="data-service.js"></script>
+  <script src="auth.js"></script>
+  <script>
+    const settingsForm = document.getElementById('settingsForm');
+    const registerStatus = document.getElementById('registerStatus');
+    const isNew = new URLSearchParams(location.search).get('novo') === '1';
+
+    (async function fillForm(){
+      if (isNew) return;
+      const currentUser = await window.TVReceptionAuth.getUser();
+      document.getElementById('clinicName').value = currentUser?.clinic_name || '';
+      document.getElementById('ownerName').value = currentUser?.owner_name || '';
+      document.getElementById('clinicSlug').value = currentUser?.slug || '';
+      document.getElementById('clinicPlan').value = currentUser?.plan || 'pro';
+      document.getElementById('registerEmail').value = currentUser?.email || '';
+      document.getElementById('registerPhone').value = currentUser?.phone || '';
+      document.getElementById('registerPassword').value = currentUser?.password || '';
+      document.getElementById('confirmPassword').value = currentUser?.password || '';
+    })();
+
+    settingsForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const clinicName = document.getElementById('clinicName').value.trim();
+      const ownerName = document.getElementById('ownerName').value.trim();
+      const clinicSlug = document.getElementById('clinicSlug').value.trim();
+      const clinicPlan = document.getElementById('clinicPlan').value.trim();
+      const email = document.getElementById('registerEmail').value.trim();
+      const phone = document.getElementById('registerPhone').value.trim();
+      const password = document.getElementById('registerPassword').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+      if (password !== confirmPassword) {
+        registerStatus.textContent = 'As senhas não conferem.';
+        registerStatus.className = 'auth-status error';
+        return;
+      }
+      try {
+        registerStatus.textContent = 'Salvando...';
+        registerStatus.className = 'auth-status info';
+        if (isNew) {
+          await window.TVReceptionAuth.register({ clinicName, ownerName, slug: clinicSlug, plan: clinicPlan, email, phone, password });
+        } else {
+          await window.TVReceptionAuth.updateProfile({ clinicName, ownerName, slug: clinicSlug, plan: clinicPlan, email, phone, password });
+        }
+        registerStatus.textContent = isNew ? 'Clínica criada com sucesso.' : 'Configurações salvas com sucesso.';
+        registerStatus.className = 'auth-status success';
+        setTimeout(() => { window.location.replace('painel.html'); }, 400);
+      } catch (error) {
+        registerStatus.textContent = error.message || 'Não foi possível salvar.';
+        registerStatus.className = 'auth-status error';
+      }
+    });
+  </script>
+</body>
+</html>

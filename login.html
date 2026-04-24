@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Entrar • Vetcore Indoor</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="auth-body">
+  <main class="auth-shell">
+    <section class="auth-side-card">
+      <div class="hero-kicker">Acesso da clínica</div>
+      <h2 id="loginClinicTitle">Entre para gerenciar sua recepção.</h2>
+      <p>
+        Faça login para atualizar vídeos, imagens, tempo de exibição e a faixa de avisos da TV da clínica.
+      </p>
+
+      <div class="auth-bullets">
+        <div><strong>Nome da clínica na tela</strong><br><span>O login mostra o nome salvo no cadastro.</span></div>
+        <div><strong>Esqueci minha senha</strong><br><span>Fluxo simples para demonstração e uso comercial.</span></div>
+        <div><strong>Acesso comercial</strong><br><span>Depois do login, o cadastro da clínica fica dentro das configurações do painel.</span></div>
+      </div>
+    </section>
+
+    <section class="auth-card compact">
+      <div class="marketing-brand" style="margin-bottom:18px;">
+        <img src="assets/vetcore-indoor-logo.svg" alt="Vetcore Indoor" class="marketing-logo">
+        <div>
+          <h1 style="margin:0;font-size:1.3rem;">Vetcore Indoor</h1>
+          <p style="margin:4px 0 0;color:var(--muted);">Acesso ao painel da clínica</p>
+        </div>
+      </div>
+      <h1>Entrar</h1>
+      <p>Use o e-mail e a senha da clínica para acessar o painel.</p>
+
+      <form id="loginForm" class="auth-form">
+        <label>
+          <span>E-mail</span>
+          <input type="email" id="loginEmail" placeholder="admin@clinica.com" required />
+        </label>
+
+        <label>
+          <span>Senha</span>
+          <input type="password" id="loginPassword" placeholder="Digite sua senha" required />
+        </label>
+
+        <div class="auth-row-between">
+          <a class="inline-link" href="#" id="forgotPasswordLink">Esqueceu a senha?</a>
+          
+        </div>
+
+        <div class="auth-actions">
+          <button type="submit" class="light-btn">Entrar no painel</button>
+          <a class="outline-btn" href="configuracoes.html?novo=1">Cadastrar clínica</a>
+        </div>
+
+        <div class="demo-box">
+          Acesso de demonstração: <strong>admin@clinica.com</strong> / <strong>123456</strong>
+        </div>
+
+        <div id="loginStatus" class="auth-status" aria-live="polite"></div>
+      </form>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="data-service.js"></script>
+  <script src="auth.js"></script>
+  <script>
+    const loginForm = document.getElementById('loginForm');
+    const loginStatus = document.getElementById('loginStatus');
+
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      loginStatus.textContent = 'Validando acesso...';
+      loginStatus.className = 'auth-status info';
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      try {
+        const clinic = await window.TVReceptionAuth.login(email, password);
+        if (clinic) {
+          loginStatus.textContent = 'Login realizado com sucesso. Entrando no painel...';
+          loginStatus.className = 'auth-status success';
+          setTimeout(() => window.location.replace('painel.html'), 300);
+        } else {
+          loginStatus.textContent = 'E-mail ou senha inválidos.';
+          loginStatus.className = 'auth-status error';
+        }
+      } catch (error) {
+        loginStatus.textContent = error.message || 'Não foi possível entrar.';
+        loginStatus.className = 'auth-status error';
+      }
+    });
+
+    document.getElementById('forgotPasswordLink').addEventListener('click', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value.trim();
+      const response = await window.TVReceptionAuth.forgotPassword(email);
+      loginStatus.textContent = response.message;
+      loginStatus.className = 'auth-status ' + (response.ok ? 'info' : 'error');
+    });
+  </script>
+</body>
+</html>

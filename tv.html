@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vetcore Indoor • Tela da TV</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="tv-fixed-body" data-news-preset="clean">
+  <header class="tv-header">
+    <div class="tv-header-left">
+      <img id="tvLogo" src="assets/logo.svg" alt="Logo da clínica" class="tv-logo" />
+      <div>
+        <div class="tv-clinic-name" id="tvClinicName">Clínica Veterinária</div>
+        <div class="tv-clinic-subtitle" id="tvClinicSubtitle">Atualização automática da playlist local</div>
+      </div>
+    </div>
+    <div class="tv-time-wrap">
+      <div id="tvModeBadge" class="tv-date"></div>
+      <div id="tvDate" class="tv-date"></div>
+      <div id="tvTime" class="tv-time"></div>
+    </div>
+  </header>
+
+  <main class="tv-layout">
+    <section class="tv-media-panel">
+      <div class="tv-media-frame">
+        <video id="mainVideo" class="main-media is-hidden" autoplay playsinline preload="auto"></video>
+        <iframe id="mainYoutube" class="main-media is-hidden youtube-frame" title="Conteúdo do YouTube" referrerpolicy="strict-origin-when-cross-origin" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+        <div id="youtubeFallbackNotice" class="youtube-fallback-notice is-hidden">Esse vídeo do YouTube não pôde ser exibido aqui. Pulando para o próximo conteúdo...</div>
+        <img id="mainImage" class="main-media" alt="Conteúdo principal" src="assets/media.jpg" />
+        <section id="mainLayout" class="tv-text-layout is-hidden" aria-label="Layout com texto">
+          <div class="tv-text-layout-inner">
+            <h2 id="layoutTitle" class="tv-text-layout-title">Título do conteúdo</h2>
+            <p id="layoutDescription" class="tv-text-layout-description">Descrição do conteúdo.</p>
+            <div id="layoutCta" class="tv-text-layout-cta is-hidden">Saiba mais</div>
+          </div>
+        </section>
+        <button id="videoAutoplayNotice" class="video-autoplay-notice is-hidden" type="button">Ativar reprodução do vídeo</button>
+      </div>
+      <div class="tv-agendamento" id="appointmentRow" hidden>
+        <span class="tv-agendamento-label">AGENDAMENTOS:</span>
+        <span class="tv-agendamento-numeros" id="appointmentNumbers"></span>
+      </div>
+    </section>
+
+    <aside class="tv-side">
+      <section class="tv-block">
+        <div class="tv-block-title">BEM-VINDO</div>
+        <div class="tv-block-text" id="sideTitle">Atendimento e novidades</div>
+        <div class="tv-contact" id="sideText">Fale com nossa recepção para agendamentos, orientações e informações sobre nossos serviços.</div>
+      </section>
+
+      <section class="tv-block">
+        <div class="tv-block-title">FALE CONOSCO</div>
+        <div class="tv-contact">
+          WhatsApp: <strong id="whatsNumber">(51) 00000-0000</strong><br />
+          Instagram: <strong id="instagramText">@suaempresa</strong><br />
+          Contato: <strong id="facebookText">/suaempresa</strong>
+        </div>
+      </section>
+
+      <section class="tv-block">
+        <div class="tv-block-title">MENSAGEM DO DIA</div>
+        <div class="tv-contact" id="footerNote">Agende o check-up do seu pet e mantenha vacinas e exames em dia.</div>
+      </section>
+    </aside>
+  </main>
+
+  <footer class="news-bar" aria-label="Faixa de avisos">
+    <div class="news-label" id="newsLabel">AVISOS</div>
+    <div class="news-wrapper">
+      <div class="news-content" id="newsContent"></div>
+    </div>
+  </footer>
+
+  <style id="tvCustomCss"></style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="data-service.js"></script>
+  <script src="tv.js"></script>
+</body>
+</html>
