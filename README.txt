@@ -49,3 +49,11 @@ LINKS IMPORTANTES:
 - Painel: painel.html
 - Cadastro da clinica: configuracoes.html?novo=1
 - TV por clinica: tv.html?clinica=slug-da-clinica
+
+
+ATUALIZAÇÃO - VÍDEOS NO SISTEMA
+1) No Supabase, crie um bucket público em Storage com o nome: indoor-videos
+2) No painel, selecione Tipo de conteúdo = Vídeo e envie um arquivo .mp4.
+3) O vídeo será salvo no Supabase Storage e a TV puxará a URL pública.
+4) Recomendado: MP4 H.264, até 50 MB, 1920x1080 ou menor. Na TV ele roda sem som para permitir autoplay.
+5) IMPORTANTE: mantenha o seu supabase-config.js que já funciona. Não sobrescreva esse arquivo com exemplo vazio.

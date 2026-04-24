@@ -7,6 +7,52 @@
 
   let supabaseClient = null;
 
+  const VIDEO_BUCKET = 'indoor-videos';
+
+  function safeFileName(value) {
+    return String(value || 'video.mp4')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-zA-Z0-9._-]+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/(^-|-$)/g, '') || 'video.mp4';
+  }
+
+  async function uploadMediaFile(file, clinicSlug, itemId) {
+    if (!file) return null;
+    const isVideo = String(file.type || '').startsWith('video/');
+
+    if (!hasSupabase()) {
+      return { url: null, storagePath: '', mime: file.type || '', name: file.name || '', kind: isVideo ? 'video' : 'image', usedStorage: false };
+    }
+
+    const client = getClient();
+    const safeSlug = slugify(clinicSlug || getActiveClinic() || 'clinica');
+    const extension = (file.name || '').split('.').pop() || (isVideo ? 'mp4' : 'jpg');
+    const baseName = safeFileName((file.name || 'media').replace(/\.[^.]+$/, ''));
+    const path = safeSlug + '/' + (itemId || Date.now()) + '-' + Date.now() + '-' + baseName + '.' + extension;
+
+    const { error: uploadError } = await client.storage
+      .from(VIDEO_BUCKET)
+      .upload(path, file, {
+        cacheControl: '3600',
+        contentType: file.type || (isVideo ? 'video/mp4' : 'application/octet-stream'),
+        upsert: false
+      });
+
+    if (uploadError) {
+      const message = String(uploadError.message || uploadError.error || uploadError);
+      if (message.toLowerCase().includes('bucket')) {
+        throw new Error('Bucket "' + VIDEO_BUCKET + '" não encontrado. Crie esse bucket público no Supabase Storage.');
+      }
+      throw uploadError;
+    }
+
+    const { data } = client.storage.from(VIDEO_BUCKET).getPublicUrl(path);
+    return { url: data?.publicUrl || '', storagePath: path, bucket: VIDEO_BUCKET, mime: file.type || '', name: file.name || '', kind: isVideo ? 'video' : 'image', usedStorage: true };
+  }
+
+
   function getConfig() {
     return window.TVReceptionSupabaseConfig || { url: '', anonKey: '' };
   }
@@ -320,6 +366,7 @@
   window.TVReceptionDataService = {
     hasSupabase,
     getClient,
+    uploadMediaFile,
     slugify,
     getActiveClinic,
     setActiveClinic,

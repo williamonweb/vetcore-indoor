@@ -257,8 +257,9 @@ function showVideo(item, duration) {
   mainVideo.classList.remove('is-hidden');
   mainVideo.src = src || '';
   mainVideo.currentTime = 0;
-  mainVideo.muted = false;
-  mainVideo.volume = 1;
+  mainVideo.muted = true;
+  mainVideo.volume = 0;
+  mainVideo.setAttribute('playsinline', '');
 
   const playPromise = mainVideo.play();
   if (playPromise?.catch) playPromise.catch(() => showAutoplayNotice());

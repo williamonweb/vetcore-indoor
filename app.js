@@ -20,6 +20,7 @@ let tvSettings = { ...defaultTvSettings };
 let currentMediaData = null;
 let currentLogoData = null;
 let currentTvLogoData = null;
+let currentMediaFile = null;
 let currentClinic = null;
 let unsubscribeRealtime = null;
 
@@ -157,10 +158,17 @@ function wireEvents() {
     const file = e.target.files[0];
     if (!file) return;
     setStatus('Lendo arquivo...');
-    currentMediaData = await readFileAsDataURL(file);
+    currentMediaFile = file;
     const inferredKind = file.type.startsWith('video/') ? 'video' : 'image';
-    renderPreview(mediaPreview, inferredKind, currentMediaData);
-    setStatus(inferredKind === 'video' ? 'Vídeo pronto' : 'Imagem pronta');
+    if (inferredKind === 'video' && window.TVReceptionDataService.hasSupabase()) {
+      currentMediaData = URL.createObjectURL(file);
+      renderPreview(mediaPreview, inferredKind, currentMediaData);
+      setStatus('Vídeo selecionado. Ele será enviado ao Supabase Storage ao salvar.');
+    } else {
+      currentMediaData = await readFileAsDataURL(file);
+      renderPreview(mediaPreview, inferredKind, currentMediaData);
+      setStatus(inferredKind === 'video' ? 'Vídeo pronto' : 'Imagem pronta');
+    }
   });
 
   logoFileInput.addEventListener('change', async (e) => {
@@ -239,6 +247,13 @@ async function handleSubmit(e) {
   const id = itemId.value || makeId();
   const existing = items.find((x) => x.id === id);
 
+  let uploadedMedia = null;
+  const selectedFile = mediaFileInput.files[0] || currentMediaFile;
+  if (selectedFile && window.TVReceptionDataService.hasSupabase()) {
+    setStatus(selectedFile.type.startsWith('video/') ? 'Enviando vídeo para o Storage...' : 'Enviando mídia para o Storage...');
+    uploadedMedia = await window.TVReceptionDataService.uploadMediaFile(selectedFile, currentClinic.slug, id);
+  }
+
   const payload = {
     id,
     title: titleInput.value.trim(),
@@ -254,11 +269,13 @@ async function handleSubmit(e) {
     textColor: (textColorTextInput?.value || textColorInput?.value || '#ffffff').trim() || '#ffffff',
     textAlign: textAlignInput?.value || 'center',
     active: activeInput.checked,
-    mediaData: currentMediaData || existing?.mediaData || null,
+    mediaData: uploadedMedia?.url || currentMediaData || existing?.mediaData || null,
     logoData: currentLogoData || existing?.logoData || null,
-    mediaMime: mediaFileInput.files[0]?.type || existing?.mediaMime || '',
-    mediaName: mediaFileInput.files[0]?.name || existing?.mediaName || '',
-    mediaKind: getMediaKind(typeInput.value, currentMediaData || existing?.mediaData, mediaFileInput.files[0]?.type || existing?.mediaMime || ''),
+    mediaMime: uploadedMedia?.mime || mediaFileInput.files[0]?.type || existing?.mediaMime || '',
+    mediaName: uploadedMedia?.name || mediaFileInput.files[0]?.name || existing?.mediaName || '',
+    mediaStoragePath: uploadedMedia?.storagePath || existing?.mediaStoragePath || '',
+    mediaBucket: uploadedMedia?.bucket || existing?.mediaBucket || '',
+    mediaKind: uploadedMedia?.kind || getMediaKind(typeInput.value, uploadedMedia?.url || currentMediaData || existing?.mediaData, uploadedMedia?.mime || mediaFileInput.files[0]?.type || existing?.mediaMime || ''),
     updatedAt: new Date().toISOString()
   };
 
@@ -434,6 +451,7 @@ function resetForm() {
   if (textColorTextInput) textColorTextInput.value = '#ffffff';
   if (textAlignInput) textAlignInput.value = 'center';
   currentMediaData = null;
+  currentMediaFile = null;
   currentLogoData = null;
   mediaFileInput.value = '';
   logoFileInput.value = '';
@@ -517,6 +535,7 @@ function getMediaKind(type, data, mime = '') {
   if (type === 'video') return 'video';
   if (String(mime).startsWith('video/')) return 'video';
   if (data && typeof data === 'string' && data.startsWith('data:video/')) return 'video';
+  if (data && typeof data === 'string' && /\.(mp4|webm|mov|m4v)(\?|$)/i.test(data)) return 'video';
   return 'image';
 }
 
